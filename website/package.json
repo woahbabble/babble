@@ -1,0 +1,19 @@
+{
+  "name": "babble-website",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev",
+    "dev:clean": "npm run clean:cache && next dev",
+    "build": "next build",
+    "build:clean": "npm run clean:cache && next build",
+    "start": "next start",
+    "clean:cache": "node ./scripts/clean-next-cache.mjs",
+    "sync:nsfw": "node ./scripts/sync-nsfw-blocklist.mjs"
+  },
+  "dependencies": {
+    "next": "^15.3.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}

@@ -1,0 +1,388 @@
+:root {
+  color-scheme: light;
+  --bg: #fcfcfd;
+  --surface: #ffffff;
+  --surface-soft: #f4f5f7;
+  --text: #16181d;
+  --muted: #5b6270;
+  --border: #d7dce5;
+  --accent: #2f6feb;
+  --accent-strong: #1f57c9;
+  --upvote: #cc5a06;
+  --downvote: #2d7dd2;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+}
+
+html[data-theme='midnight'] {
+  color-scheme: dark;
+  --bg: #111318;
+  --surface: #171b22;
+  --surface-soft: #1d2330;
+  --text: #e7ebf2;
+  --muted: #9ea7b8;
+  --border: #2e3747;
+  --accent: #8db2ff;
+  --accent-strong: #b5ccff;
+  --upvote: #ffb26b;
+  --downvote: #8ec6ff;
+  --shadow: none;
+}
+
+html[data-theme='dusk'] {
+  color-scheme: dark;
+  --bg: #151822;
+  --surface: #1d2230;
+  --surface-soft: #232a3b;
+  --text: #dbe1ff;
+  --muted: #9da6c9;
+  --border: #333c55;
+  --accent: #7aa2ff;
+  --accent-strong: #9fb8ff;
+  --upvote: #f2aa6f;
+  --downvote: #7dcfff;
+  --shadow: none;
+}
+
+html[data-theme='clay'] {
+  color-scheme: dark;
+  --bg: #202124;
+  --surface: #2a2c31;
+  --surface-soft: #31343a;
+  --text: #eceff4;
+  --muted: #a7adb8;
+  --border: #3d424c;
+  --accent: #8ab4f8;
+  --accent-strong: #a9c6ff;
+  --upvote: #f7b267;
+  --downvote: #8bd3ff;
+  --shadow: none;
+}
+
+html[data-theme='fjord'] {
+  color-scheme: dark;
+  --bg: #2b303b;
+  --surface: #323a48;
+  --surface-soft: #3a4355;
+  --text: #e5e9f0;
+  --muted: #b7c0d0;
+  --border: #4a566d;
+  --accent: #88c0d0;
+  --accent-strong: #9fd0dc;
+  --upvote: #ebcb8b;
+  --downvote: #81a1c1;
+  --shadow: none;
+}
+
+html[data-theme='violet'] {
+  color-scheme: dark;
+  --bg: #282a36;
+  --surface: #303241;
+  --surface-soft: #383b4d;
+  --text: #f5f8ff;
+  --muted: #b9bed0;
+  --border: #4a5066;
+  --accent: #b39ddb;
+  --accent-strong: #ccb8ef;
+  --upvote: #ffcb6b;
+  --downvote: #89ddff;
+  --shadow: none;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+.container {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.topbar {
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+}
+
+.brand {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-right: 8px;
+}
+
+.nav {
+  display: flex;
+  gap: 14px;
+  font-size: 0.94rem;
+}
+
+.theme-switcher {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.theme-switcher select {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.thread-list,
+.comment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.thread-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.thread-main {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.thread-count {
+  font-weight: 700;
+  min-width: 4ch;
+  color: var(--accent);
+}
+
+.thread-title {
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.meta-line {
+  margin-top: 5px;
+  font-size: 0.88rem;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--muted);
+}
+
+.comment-node {
+  border-left: 1px solid var(--border);
+  margin-top: 10px;
+  padding-left: 10px;
+}
+
+.comment-meta {
+  font-size: 0.84rem;
+  display: flex;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.comment-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.comment-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.vote-rail {
+  width: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  user-select: none;
+}
+
+.vote-btn,
+.vote-clear {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.vote-btn.active.up {
+  color: var(--upvote);
+}
+
+.vote-btn.active.down {
+  color: var(--downvote);
+}
+
+.vote-score {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  min-height: 1em;
+}
+
+.comment-body {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.comment-image-grid {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.comment-image-link {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.comment-image {
+  display: block;
+  max-width: min(360px, 100%);
+  max-height: 260px;
+  object-fit: cover;
+}
+
+.search-form {
+  margin: 14px 0 18px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: inherit;
+}
+
+.domain-group {
+  margin-bottom: 14px;
+}
+
+.domain-heading {
+  font-size: 0.95rem;
+  margin: 10px 0 4px;
+}
+
+.anchor-quote {
+  margin: 6px 0;
+  padding: 4px 8px;
+  border-left: 2px solid var(--border);
+  background: var(--surface-soft);
+  font-size: 0.9rem;
+}
+
+.anchor-quote-wrap {
+  margin-top: 6px;
+}
+
+.anchor-quote-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.comment-controversial .comment-body,
+.comment-controversial .anchor-quote {
+  opacity: 0.7;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.bridge-notice {
+  margin: 10px auto 0;
+  max-width: 900px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.bridge-notice-close {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: inherit;
+  padding: 4px 8px;
+}
+
+.tag-chip {
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+}
+
+.tag-panel {
+  margin: 10px 0 16px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}

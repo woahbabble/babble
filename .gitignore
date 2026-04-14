@@ -1,2 +1,12 @@
 node_modules
-*.pem\nbabble.db\npackages.microsoft.gpg
+*.pem
+babble.db
+packages.microsoft.gpg
+website/.next
+website/node_modules
+.env
+.env.*
+!.env.example
+website/.env.local
+website/.env.*
+!website/.env.local.example

@@ -4,7 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Basic test added in test.js\"",
+    "start:api": "node ./server/index.js",
+    "smoke:api": "node -e \"require('./server/db'); require('./server/routes'); console.log('routes-ok')\"",
+    "check:secrets": "node ./scripts/check-no-secrets.mjs",
+    "check:secrets:repo": "node ./scripts/check-no-secrets-repo.mjs",
+    "migrate:postgres": "node ./server/migrate-to-postgres.js",
+    "generate:extension-env": "node ./scripts/generate-extension-env.mjs"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +19,15 @@
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.9.0",
     "cors": "^2.8.6",
+    "dompurify": "^3.4.0",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3"
+    "express-rate-limit": "^7.4.0",
+    "jsdom": "^29.0.2",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0"
   }
 }
