@@ -1,0 +1,16 @@
+services:
+  api:
+    volumes:
+      - ./server:/app/server
+    command: node --watch server/index.js
+
+  website:
+    build:
+      context: ./website
+      dockerfile: Dockerfile.dev
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./website:/app
+      - /app/node_modules
+      - /app/.next
