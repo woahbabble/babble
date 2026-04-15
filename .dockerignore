@@ -1,0 +1,8 @@
+node_modules
+website/node_modules
+.env
+*.pem
+babble.db
+.git
+docs
+extension

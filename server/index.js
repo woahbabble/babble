@@ -59,9 +59,9 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', name: 'Babble API' })
 })
 
-app.get('/ready', (req, res) => {
+app.get('/ready', async (req, res) => {
   try {
-    db.prepare('SELECT 1 as ok').get()
+    await db.query('SELECT 1 as ok')
     res.json({ status: 'ready', db: 'ok' })
   } catch (err) {
     res.status(503).json({ status: 'not_ready', error: err.message })

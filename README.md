@@ -1,79 +1,141 @@
 # Babble
 
-Babble is a universal commenting layer for the internet, it aims to provide freedom of discussion and discourse. 
+Babble is a universal commenting layer for the internet, providing freedom of discussion and discourse.
 
 ## Repo Structure
 
-- `server/` - Express API (auth, comments, feed, search, moderation)
-- `extension/` - Chromium extension sidebar UI
-- `website/` - Next.js public website (feed, threads, profiles, search, moderation UI)
+- `server/` — Express API (auth, comments, feed, search, moderation)
+- `website/` — Next.js public website (feed, threads, profiles, search, moderation UI)
+- `extension/` — Chromium extension sidebar UI
+- `db/` — PostgreSQL schema (`init.sql` runs automatically on first container start)
 
-## Local Setup
+## Local Development (Docker)
 
-### 1) API server
+Everything runs in Docker. No local Node or Postgres installation required.
 
-```bash
-cp .env.example .env
-```
-
-Set `ADMIN_TOKEN` in `.env` to a strong random value.
-Set `API_URL` to your API base URL.
-
-Run:
+### 1) Start the stack
 
 ```bash
-node server/index.js
+docker compose up --build
 ```
 
-### 2) Website
+Subsequent starts (no rebuild needed):
 
 ```bash
-cp website/.env.local.example website/.env.local
-cd website
-npm install
-npm run dev
+docker compose up
 ```
 
-### 3) NSFW blocklist sync
+### 2) Services
 
-From `website/`:
+| Service | URL | Notes |
+| --- | --- | --- |
+| Website | <http://localhost:3000> | Next.js frontend |
+| API | <http://localhost:3001> | Express REST API |
+| pgAdmin | <http://localhost:5050> | Database UI (login below) |
+| Postgres | internal port 5432 | Not exposed to host |
+
+### 3) pgAdmin login
+
+- **URL:** <http://localhost:5050>
+- **Email:** `admin@babble.dev`
+- **Password:** `admin`
+
+To connect to the database inside pgAdmin, add a new server:
+
+| Field    | Value   |
+|----------|---------|
+| Host     | `db`    |
+| Port     | `5432`  |
+| Database | `babble`|
+| Username | `babble`|
+| Password | `babble`|
+
+### 4) Useful commands
 
 ```bash
-npm run sync:nsfw
+# Stop containers, keep database data
+docker compose down
+
+# Stop and wipe the database (fresh start)
+docker compose down -v
+
+# View logs for a specific service
+docker compose logs -f api
+
+# Rebuild a single service
+docker compose up --build api
 ```
 
-This refreshes `website/data/nsfw-blocklist.txt` from the maintained upstream source.
+### 5) Extension
 
-### 4) Extension runtime env file
+The browser extension requires no container. Load it directly into Chrome via `chrome://extensions` → **Load unpacked** → select the `extension/` folder.
 
-Generate extension runtime defaults from env:
+`extension/env.js` already points to `localhost:3001` and `localhost:3000` — no changes needed.
+
+### 6) Migrate existing SQLite data (optional)
+
+If you have an existing `babble.db` from a previous local setup, copy it to the repo root and run:
 
 ```bash
-API_URL=https://babble.local:3001/api WEBSITE_URL=http://localhost:3000 npm run generate:extension-env
+docker compose run --rm api node server/migrate-to-postgres.js
 ```
 
-Then reload the extension in `chrome://extensions`.
+---
+
+## Network Architecture
+
+```text
+browser / extension
+      │
+      ├── localhost:3000  →  [website]  Next.js
+      └── localhost:3001  →  [api]      Express
+                                │
+                         babble-net (internal Docker bridge)
+                                │
+                             [db]       postgres:16-alpine :5432
+```
+
+All services share the internal Docker network `babble-net`. The database is not exposed to the host — only the API and website are reachable from outside the network. pgAdmin connects to `db` via the internal network.
+
+---
+
+## Environment Variables
+
+Copy `.env.example` to `.env` for reference. In Docker, env vars are set directly in `docker-compose.yml` — the `.env` file is not used by the containers.
+
+Key variables for the API:
+
+| Variable | Description |
+| --- | --- |
+| `DATABASE_URL` | Postgres connection string |
+| `PGSSLMODE` | Set to `disable` for local Docker |
+| `JWT_SECRET` | Token signing secret (use a strong value in production) |
+| `CORS_ORIGINS` | Comma-separated allowed origins, or `*` |
+| `ADMIN_TOKEN` | Token for admin API routes |
+| `USE_HTTPS` | Set to `0` in Docker (TLS terminated at edge in production) |
+
+---
 
 ## Moderation
 
 - User reports: `POST /api/flags`
-- Admin review API:
+- Admin API:
   - `GET /api/admin/flags`
   - `POST /api/admin/comments/:id/remove`
   - `POST /api/admin/flags/:id/review`
+  - `GET /api/admin/users`
+  - `GET /api/admin/threads`
 - Admin website page: `/admin/moderation`
 - Admin auth header: `x-admin-token: <ADMIN_TOKEN>`
+
+---
 
 ## Secret Safety
 
 Never commit real secrets.
 
-- Real secrets live in untracked local env files:
-  - `.env`
-  - `website/.env.local`
-- Only commit templates:
-  - `.env.example`
-  - `website/.env.local.example`
+- Real secrets live in untracked local files: `.env`, `website/.env.local`
+- Only commit templates: `.env.example`, `website/.env.local.example`
 
 Before every commit/push:
 
@@ -81,23 +143,19 @@ Before every commit/push:
 npm run check:secrets
 ```
 
-This blocks common secret leaks in staged files (env files, key material, and suspicious content patterns).
-
-## Safe Push Flow
+### Safe push flow
 
 ```bash
 npm run check:secrets
-git add server extension website scripts package.json package-lock.json README.md .env.example
+git add server extension website scripts db package.json package-lock.json README.md .env.example docker-compose.yml Dockerfile
 git diff --cached --name-only
 git commit -m "Your message"
 git push origin HEAD
 ```
 
-Confirm staged file list does not include `.env` or `website/.env.local` before committing.
+---
 
 ## Production Smoke Checks
-
-From repo root:
 
 ```bash
 npm run check:secrets:repo
@@ -105,54 +163,62 @@ npm run smoke:api
 cd website && npm run build
 ```
 
-## PostgreSQL Migration (Production)
-
-1. Create a Postgres database (Railway/Render managed PostgreSQL).
-2. Set `DATABASE_URL` in `.env`.
-3. Run migration copy from local SQLite:
-
-```bash
-npm run migrate:postgres
-```
-
-This creates tables in Postgres and copies users/comments/flags/tags/votes/threads.
+---
 
 ## Deployment
 
-### API on Railway or Render
+### API (Railway / Render)
 
-- Set environment variables:
-  - `NODE_ENV=production`
-  - `DATABASE_URL=<managed-postgres-url>`
-  - `USE_HTTPS=0` (Railway/Render terminate TLS at the edge)
-  - `JWT_SECRET=<very-long-random-secret>`
-  - `API_URL=https://<api-domain>/api`
-  - `CORS_ORIGINS=https://<website-domain>,chrome-extension://<extension-id>,moz-extension://*`
-  - `ADMIN_TOKEN=<strong-random-token>`
-  - rate-limit vars as needed
-- Start command:
+Set environment variables:
+
+- `NODE_ENV=production`
+- `DATABASE_URL=<managed-postgres-url>`
+- `USE_HTTPS=0` (TLS terminated at the edge)
+- `JWT_SECRET=<very-long-random-secret>`
+- `CORS_ORIGINS=https://<website-domain>,chrome-extension://<extension-id>,moz-extension://*`
+- `ADMIN_TOKEN=<strong-random-token>`
+
+Start command:
 
 ```bash
 node server/index.js
 ```
 
-Use `/health` for liveness and `/ready` for readiness checks.
+Use `/health` for liveness and `/ready` for readiness probes.
 
-### Website on Vercel or Railway
+### Website (Vercel / Railway)
 
-- Set env:
-  - `API_URL=https://<api-domain>/api`
-  - `NEXT_PUBLIC_BABBLE_API_BASE=https://<api-domain>/api`
-- Build command:
+Set env:
+
+- `API_URL=https://<api-domain>/api`
+- `NEXT_PUBLIC_BABBLE_API_BASE=https://<api-domain>/api`
+
+Build command:
 
 ```bash
 cd website && npm install && npm run build
 ```
 
-### Extension (Chrome/Firefox store builds)
+### Extension (Chrome / Firefox store builds)
 
-Generate environment file before packaging:
+Generate the extension environment file before packaging:
 
 ```bash
 API_URL=https://<api-domain>/api WEBSITE_URL=https://<website-domain> npm run generate:extension-env
+```
+
+Then reload the extension in `chrome://extensions`.
+
+### PostgreSQL Migration
+
+To migrate data from an existing SQLite `babble.db` to a fresh Postgres instance:
+
+```bash
+DATABASE_URL=<postgres-url> node server/migrate-to-postgres.js
+```
+
+Or via Docker:
+
+```bash
+docker compose run --rm api node server/migrate-to-postgres.js
 ```
