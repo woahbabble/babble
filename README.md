@@ -1,6 +1,6 @@
 # Babble
 
-Babble is a universal commenting layer for the internet.
+Babble is a universal commenting layer for the internet, it aims to provide freedom of discussion and discourse. 
 
 ## Repo Structure
 
