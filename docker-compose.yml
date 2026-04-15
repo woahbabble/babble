@@ -7,7 +7,6 @@ services:
       POSTGRES_PASSWORD: babble
     volumes:
       - babble_postgres_data:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U babble -d babble"]
       interval: 5s

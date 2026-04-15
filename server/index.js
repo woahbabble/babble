@@ -7,7 +7,9 @@ const https = require('https')
 const fs = require('fs')
 const cors = require('cors')
 const rateLimit = require('express-rate-limit')
-const db = require('./db')
+const pool = require('./db')
+const { db } = require('./db')
+const { migrate } = require('drizzle-orm/node-postgres/migrator')
 const routes = require('./routes')
 
 const app = express()
@@ -61,25 +63,34 @@ app.get('/health', (req, res) => {
 
 app.get('/ready', async (req, res) => {
   try {
-    await db.query('SELECT 1 as ok')
+    await pool.query('SELECT 1 as ok')
     res.json({ status: 'ready', db: 'ok' })
   } catch (err) {
     res.status(503).json({ status: 'not_ready', error: err.message })
   }
 })
 
-if (USE_HTTPS) {
-  const sslOptions = {
-    key: fs.readFileSync(SSL_KEY_PATH),
-    cert: fs.readFileSync(SSL_CERT_PATH)
+async function start() {
+  console.log('Running database migrations...')
+  await migrate(db, { migrationsFolder: './db/migrations' })
+  console.log('Migrations complete.')
+
+  if (USE_HTTPS) {
+    const sslOptions = {
+      key: fs.readFileSync(SSL_KEY_PATH),
+      cert: fs.readFileSync(SSL_CERT_PATH)
+    }
+    https.createServer(sslOptions, app).listen(PORT, () => {
+      console.log(`Babble API running on https://${API_HOST}:${PORT}`)
+    })
+  } else {
+    app.listen(PORT, () => {
+      console.log(`Babble API running on http://${API_HOST}:${PORT}`)
+    })
   }
-  https.createServer(sslOptions, app).listen(PORT, () => {
-    console.log(`Babble API running on https://${API_HOST}:${PORT}`)
-  })
-} else {
-  app.listen(PORT, () => {
-    console.log(`Babble API running on http://${API_HOST}:${PORT}`)
-  })
 }
 
-console.log('Listen called')
+start().catch((err) => {
+  console.error('Failed to start:', err)
+  process.exit(1)
+})

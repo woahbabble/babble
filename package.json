@@ -10,7 +10,11 @@
     "check:secrets": "node ./scripts/check-no-secrets.mjs",
     "check:secrets:repo": "node ./scripts/check-no-secrets-repo.mjs",
     "migrate:postgres": "node ./server/migrate-to-postgres.js",
-    "generate:extension-env": "node ./scripts/generate-extension-env.mjs"
+    "generate:extension-env": "node ./scripts/generate-extension-env.mjs",
+    "db:generate": "drizzle-kit generate --config drizzle.config.mjs",
+    "db:migrate": "drizzle-kit migrate --config drizzle.config.mjs",
+    "db:push": "drizzle-kit push --config drizzle.config.mjs",
+    "db:studio": "drizzle-kit studio --config drizzle.config.mjs"
   },
   "keywords": [],
   "author": "",
@@ -28,6 +32,8 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2",
     "jest": "^30.3.0"
   }
 }
