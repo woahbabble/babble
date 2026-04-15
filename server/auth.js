@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const db = require('./db')
+const pool = require('./db')
 
 function resolveJwtSecret() {
   const value = (process.env.JWT_SECRET || '').trim()
@@ -14,37 +14,33 @@ function resolveJwtSecret() {
 
 const JWT_SECRET = resolveJwtSecret()
 
-function signup(username, email, password) {
-  const hashed = bcrypt.hashSync(password, 10)
-  const stmt = db.prepare(`
-    INSERT INTO users (username, email, password)
-    VALUES (?, ?, ?)
-  `)
+async function signup(username, email, password) {
+  const hashed = await bcrypt.hash(password, 10)
   try {
-    const result = stmt.run(username, email, hashed)
-    return { id: result.lastInsertRowid, username, email }
+    const result = await pool.query(
+      `INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email`,
+      [username, email, hashed]
+    )
+    return result.rows[0]
   } catch (err) {
-    if (err.message.includes('UNIQUE')) {
-      throw new Error('Username or email already taken')
-    }
+    if (err.code === '23505') throw new Error('Username or email already taken')
     throw err
   }
 }
 
-function login(email, password) {
-  const user = db.prepare(`
-    SELECT * FROM users WHERE email = ?
-  `).get(email)
+async function login(email, password) {
+  const result = await pool.query(`SELECT * FROM users WHERE email = $1`, [email])
+  const user = result.rows[0]
   if (!user) throw new Error('No account with that email')
   if (user.is_deleted) throw new Error('Account has been deleted')
-  const valid = bcrypt.compareSync(password, user.password)
+  const valid = await bcrypt.compare(password, user.password)
   if (!valid) throw new Error('Wrong password')
   const token = jwt.sign(
     { id: user.id, username: user.username },
     JWT_SECRET,
     { expiresIn: '30d' }
   )
-  return { token, username: user.username, id: user.id }
+  return { token, username: user.username, id: Number(user.id) }
 }
 
 function requireAuth(req, res, next) {
